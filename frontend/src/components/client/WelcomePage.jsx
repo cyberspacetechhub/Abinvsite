@@ -9,7 +9,7 @@ const actions = [
     icon: <AccountBalanceWallet fontSize="large" className="text-white" />,
     title: 'Make a Deposit',
     body: 'Fund your account and start accessing global markets immediately.',
-    to: '/user/depositmethod',
+    to: '/user/deposit-flow',
     accent: 'from-primary-500 to-primary-700',
     cta: 'Deposit Now',
   },
