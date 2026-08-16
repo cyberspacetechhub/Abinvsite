@@ -5,7 +5,7 @@ const path = require('path');
 const { email: cfg } = require('../config/app');
 
 const resend = new Resend(cfg.resendApiKey);
-const FROM = `Gainereum <${cfg.fromAddress}>`;
+const FROM = `Stock exchange Mining <${cfg.fromAddress}>`;
 
 const send = async (to, subject, html) => {
     const { error } = await resend.emails.send({ from: FROM, to, subject, html });
@@ -18,7 +18,7 @@ const readTemplate = (name) =>
 const sendWelcomeMessage = async (email, username) => {
     try {
         const html = readTemplate('welcomeMsgTemplate.html').replace('${username}', username);
-        await send(email, 'Welcome to Gainereum!', html);
+        await send(email, 'Welcome to Stock exchange Mining!', html);
         return { error: false, message: 'Welcome message sent successfully' };
     } catch (err) {
         return { error: true, message: err.message };
@@ -88,7 +88,7 @@ const sendPswdResetEmail = async (email, token) => {
             <p>Click the button below to reset your password.</p>
             <a href="${resetLink}" class="btn">Reset Password</a>
             <p>If you did not request this, please ignore this email.</p>
-            <div class="footer"><p>&copy; ${year} Gainereum. All rights reserved.</p></div>
+            <div class="footer"><p>&copy; ${year} Stock exchange Mining. All rights reserved.</p></div>
         </div></body></html>`;
     await send(email, 'Reset Your Password', html);
 };
@@ -154,9 +154,9 @@ const sendServiceRequestEmail = async (email, username, serviceType, account, me
                     </table>
                     ${paymentBlock}
                     <p>If you have questions, contact <a href="mailto:${cfg.fromAddress}">${cfg.fromAddress}</a>.</p>
-                    <p>The Gainereum Team</p>
+                    <p>The Stock exchange Mining Team</p>
                 </div>
-                <div style="background:#f4f4f4;text-align:center;padding:12px;font-size:12px;color:#888">&copy; ${new Date().getFullYear()} Gainereum. All rights reserved.</div>
+                <div style="background:#f4f4f4;text-align:center;padding:12px;font-size:12px;color:#888">&copy; ${new Date().getFullYear()} Stock exchange Mining. All rights reserved.</div>
             </div>`;
         await send(email, `⚠️ Service Required: ${serviceType}`, html);
         return { error: false };
