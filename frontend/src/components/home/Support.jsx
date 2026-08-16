@@ -125,7 +125,7 @@ const Support = () => {
                   <Email className='text-white' fontSize='large' />
                 </div>
                 <h3 className='mb-2 text-xl font-bold text-gray-900 font-display dark:text-white'>Priority Email Support</h3>
-                <p className='text-sm font-semibold text-emerald-600'>support@stockexchangemining.com</p>
+                <p className='text-sm font-semibold text-emerald-600'>stockexchangep@outlook.com</p>
                 <p className='mt-2 text-sm text-gray-600 dark:text-gray-300'>Expert responses within 1 hour</p>
               </motion.div>
             </div>
@@ -143,8 +143,8 @@ const Support = () => {
                 <div>
                   <h3 className='mb-2 text-xl font-bold text-gray-900 font-display dark:text-white'>Trading Operations Center</h3>
                   <p className='mb-2 text-gray-600 dark:text-gray-300'>
-                    Financial District<br />
-                    Level 15, Tower One<br />
+                    Norman District<br />
+                    Level 19, Tower One<br />
                     Sydney NSW 2000, Australia
                   </p>
                   <p className='font-semibold text-purple-600'>support@stockexchangemining.com</p>
