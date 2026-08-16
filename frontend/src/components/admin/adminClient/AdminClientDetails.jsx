@@ -27,7 +27,8 @@ import {
   ArrowBack, Person, AccountBalance, Phone, Lock,
   TrendingUp, Add, Remove, Settings, Edit,
   CheckCircle, Cancel, Warning, Security, Upgrade,
-  Build, AttachMoney, MoneyOff, DeleteSweep, Tune
+  Build, AttachMoney, MoneyOff, DeleteSweep, Tune,
+  PersonAdd
 } from '@mui/icons-material'
 
 const fmt = (v) => (v || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
@@ -140,6 +141,17 @@ const AdminClientDetails = () => {
                 <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                   <Lock fontSize="small" />
                   <span className="font-mono font-medium text-gray-900 dark:text-white">{client.unhashedPswd || 'N/A'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                  <PersonAdd fontSize="small" />
+                  {client.referrer ? (
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {client.referrer.firstname} {client.referrer.lastname}
+                      <span className="ml-1 text-xs text-gray-400">({client.referrer.email})</span>
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 italic">No referrer</span>
+                  )}
                 </div>
                 <div className="mt-1">
                   <WithdrawalControls user={client} onUpdate={handleClientDetails} />

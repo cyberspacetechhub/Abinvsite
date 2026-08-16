@@ -127,7 +127,7 @@ const deleteClient = async(id) => {
 
 const getClient = async(id) => {
     try {
-        const client = await Client.findOne({_id: id}).populate('transactions').populate('plan').exec()
+        const client = await Client.findOne({_id: id}).populate('transactions').populate('plan').populate('referrer', 'firstname lastname email username').exec()
         if(!client) return {error: 'Client not found'}
         return client
     } catch (err) {
