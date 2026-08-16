@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f4f4f4; 
+        }
+        .email-container { 
+            max-width: 600px; 
+            margin: 20px auto; 
+            background-color: #ffffff; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+        }
+        .email-header { 
+            background-color: #f4f4f4; 
+            color: #ffffff; 
+            text-align: center; 
+            padding: 20px; 
+        }
+        .email-header .logo-container { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 1rem; 
+            margin-bottom: 10px; 
+        }
+        .email-header img { 
+            width: 100px;
+        }
+        .email-body { 
+            padding: 20px; 
+            color: #333333; 
+        }
+        .email-footer { 
+            background-color: #f4f4f4; 
+            text-align: center; 
+            padding: 10px; 
+            font-size: 12px; 
+            color: #888888; 
+        }
+        a { 
+            color: #007BFF; 
+            text-decoration: none; 
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <div class="logo-container">
+                <img src="https://stockexchangemining.com/semlogo.png" alt="Stock Exchange Mining">
+            </div>
+            <h1>Deposit Successful!</h1>
+        </div>
+        <div class="email-body">
+            <p>Dear Customer,</p>
+            <p>We are excited to inform you that your deposit of <strong>${amount}.00</strong> has been successfully processed.</p>
+            <p><strong>Transaction Details:</strong></p>
+            <ul>
+                <li><strong>Transaction ID:</strong> ${transactionId}</li>
+                <li><strong>Deposit Method:</strong> ${depositMethod}</li>
+                <li><strong>Address:</strong> ${address}</li>
+            </ul>
+            <p>Thank you for choosing our platform! If you have any questions, feel free to <a href="mailto:support@stockexchangemining.com">contact support</a>.</p>
+            <p>Warm regards,</p>
+            <p><strong>The Stock Exchange Mining Team</strong></p>
+        </div>
+        <div class="email-footer" id="footer-year">
+            © <span id="year"></span> Stock Exchange Mining. All rights reserved.
+          </div>
+          
+        <script>
+            document.getElementById("year").innerHTML = new Date().getFullYear();
+        </script>
+    </div>
+</body>
+</html>
