@@ -61,18 +61,13 @@ const AdminOverview = () => {
 
   // Aggregate stats from clients
   const stats = useMemo(() => {
-    const clients = data?.clients || []
-    let deposits = 0, withdrawals = 0, investments = 0
-    clients.forEach(c => {
-      c.transactions?.forEach(tx => {
-        if (tx.type === 'Deposit') deposits += tx.amount || 0
-        else if (tx.type === 'Withdrawal') withdrawals += tx.amount || 0
-        else if (tx.type === 'Investment') investments += tx.amount || 0
-      })
-    })
-    const active = clients.filter(c => c.isActive).length
-    const verified = clients.filter(c => c.isVerified).length
-    return { total: clients.length, active, verified, deposits, withdrawals, investments }
+    const total = data?.count || 0;
+    const active = data?.activeCount || 0;
+    const verified = data?.verifiedCount || 0;
+    const deposits = data?.totalDeposit || 0;
+    const withdrawals = data?.totalWithdrawal || 0;
+    const investments = data?.totalInvestment || 0;
+    return { total, active, verified, deposits, withdrawals, investments }
   }, [data])
 
   // Chart data — transaction type totals

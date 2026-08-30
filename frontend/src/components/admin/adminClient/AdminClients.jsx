@@ -57,36 +57,10 @@ const AdminClients = () => {
     }
   );
 
-  const totalDeposit = data?.clients
-  ?.reduce((clientAcc, client) => {
-    const clientDeposits = client.transactions
-      ?.filter(transaction => transaction.type === "Deposit")
-      ?.reduce((transAcc, transaction) => transAcc + (transaction.amount || 0), 0) || 0;
-    return clientAcc + clientDeposits;
-  }, 0) || 0;
-
-  const totalWithdrawal = data?.clients
-  ?.reduce((clientAcc, client) => {
-    const clientWithdrawals = client.transactions
-      ?.filter(transaction => transaction.type === "Withdrawal")
-      ?.reduce((transAcc, transaction) => transAcc + (transaction.amount || 0), 0) || 0;
-    return clientAcc + clientWithdrawals;
-  }, 0) || 0;
-
-  const totalInvestment = data?.clients
-  ?.reduce((clientAcc, client) => {
-    const clientInvestments = client.transactions
-      ?.filter(transaction => transaction.type === "Investment")
-      ?.reduce((transAcc, transaction) => transAcc + (transaction.amount || 0), 0) || 0;
-    return clientAcc + clientInvestments;
-  }, 0) || 0;
-
-const totalTransactions = data?.clients
-  ?.reduce((clientAcc, client) => {
-    const clientTotal = client.transactions
-      ?.reduce((transAcc, transaction) => transAcc + (transaction.amount || 0), 0) || 0;
-    return clientAcc + clientTotal;
-  }, 0) || 0;
+  const totalDeposit = data?.totalDeposit || 0;
+  const totalWithdrawal = data?.totalWithdrawal || 0;
+  const totalInvestment = data?.totalInvestment || 0;
+  const totalTransactions = data?.totalTransactions || 0;
 
   const handleUserSelect = (user) => {
     // console.log("Selected User:", user);
@@ -95,7 +69,7 @@ const totalTransactions = data?.clients
   const metrics = [
     {
       title: "Total Clients",
-      value: data?.clients?.length?.toString().padStart(2, '0') || '00',
+      value: data?.count?.toString().padStart(2, '0') || '00',
       icon: People,
       color: "blue",
       bgColor: "bg-blue-50 dark:bg-blue-900/20",

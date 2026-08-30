@@ -14,8 +14,45 @@ const getAllClients = async(data) => {
     try {
         const clients = await Client.find().sort({createdAt: -1}).populate('transactions').populate('plan').skip(skip).limit(limit).exec();
         const count = await Client.countDocuments();
+        
+        // Calculate global statistics
+        const activeCount = await Client.countDocuments({ isActive: true });
+        const verifiedCount = await Client.countDocuments({ isVerified: true });
+        
+        const Transaction = require('../models/Transaction');
+        const stats = await Transaction.aggregate([
+            {
+                $group: {
+                    _id: "$type",
+                    totalAmount: { $sum: "$amount" }
+                }
+            }
+        ]);
+        
+        const transactionStats = {
+            totalDeposit: 0,
+            totalWithdrawal: 0,
+            totalInvestment: 0,
+            totalTransactions: 0
+        };
+        
+        stats.forEach(stat => {
+            if (stat._id === 'Deposit') transactionStats.totalDeposit = stat.totalAmount;
+            else if (stat._id === 'Withdrawal') transactionStats.totalWithdrawal = stat.totalAmount;
+            else if (stat._id === 'Investment') transactionStats.totalInvestment = stat.totalAmount;
+        });
+        transactionStats.totalTransactions = transactionStats.totalDeposit + transactionStats.totalWithdrawal + transactionStats.totalInvestment;
+
         if(!clients) return {error: 'No clients found'}
-        return {clients, page, count};
+        return {
+            clients,
+            page,
+            count,
+            totalPage: Math.ceil(count / limit),
+            activeCount,
+            verifiedCount,
+            ...transactionStats
+        };
     } catch (err) {
         return {error: err.message}
     }
