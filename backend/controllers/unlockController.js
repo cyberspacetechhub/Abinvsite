@@ -73,6 +73,20 @@ const handleForgotPasswordRequest = async (req, res) => {
   res.json({ message: 'Password reset request submitted. Admin will review and send temporary code.' });
 };
 
+const handleAdminUnlockAccount = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    await Client.findByIdAndUpdate(userId, {
+      lockUntil: undefined,
+      loginAttempts: 0,
+      unlockRequestStatus: 'none'
+    });
+    res.json({ message: 'Account unlocked successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const handleTempLogin = async (req, res) => {
   const { email, tempCode } = req.body;
 
@@ -94,5 +108,6 @@ module.exports = {
   handleApproveUnlockRequest,
   handleRejectUnlockRequest,
   handleTempLogin,
-  handleForgotPasswordRequest
+  handleForgotPasswordRequest,
+  handleAdminUnlockAccount
 };

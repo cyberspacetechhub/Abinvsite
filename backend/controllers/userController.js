@@ -57,12 +57,12 @@ const handleDebitUser = async (req, res) => {
 const requestPswdReset = async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
-    if (!user) {
-        return res.status(404).json({ message: "User not found" });
+    if (user) {
+        const token = generateVerificationToken(user._id);
+        await sendPswdResetEmail(email, token);
     }
-    const token = generateVerificationToken(user._id);
-    await sendPswdResetEmail(email, token);
-    return res.status(200).json({ message: "Password reset email sent" });
+    // Always return generic message — never reveal if email exists
+    return res.status(200).json({ message: "If an account with that email exists, you will receive a password reset link shortly." });
 }
 
 

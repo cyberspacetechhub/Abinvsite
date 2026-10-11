@@ -29,4 +29,7 @@ router.route('/approve/:userId')
 router.route('/reject/:userId')
   .put(unlockController.handleRejectUnlockRequest);
 
+router.route('/admin-unlock/:userId')
+  .put(unlockController.handleAdminUnlockAccount);
+
 module.exports = router;

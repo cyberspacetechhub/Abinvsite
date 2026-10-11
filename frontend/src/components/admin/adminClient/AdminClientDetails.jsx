@@ -28,7 +28,7 @@ import {
   TrendingUp, Add, Remove, Settings, Edit,
   CheckCircle, Cancel, Warning, Security, Upgrade,
   Build, AttachMoney, MoneyOff, DeleteSweep, Tune,
-  PersonAdd
+  PersonAdd, LockOpen
 } from '@mui/icons-material'
 
 const fmt = (v) => (v || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
@@ -69,6 +69,7 @@ const AdminClientDetails = () => {
   const [openPlan, setOpenPlan] = useState(false)
   const [openPlanOff, setOpenPlanOff] = useState(false)
   const [openSetLimit, setOpenSetLimit] = useState(false)
+  const [unlockLoading, setUnlockLoading] = useState(false)
 
   const handleClientDetails = async () => {
     const result = await fetch(`${baseURL}client/${id}`, auth.accessToken)
@@ -83,6 +84,22 @@ const AdminClientDetails = () => {
   )
 
   const open_ = (setter) => { setter(true); setUserId(client._id) }
+
+  const handleAdminUnlock = async () => {
+    setUnlockLoading(true)
+    try {
+      await import('axios').then(({ default: axios }) =>
+        axios.put(`${baseURL}unlock/admin-unlock/${client._id}`, {}, {
+          headers: { Authorization: `Bearer ${auth.accessToken}` }
+        })
+      )
+      await handleClientDetails()
+    } catch (e) {
+      // silent — refetch will show current state
+    } finally {
+      setUnlockLoading(false)
+    }
+  }
 
   return (
     <div className="w-full">
@@ -124,6 +141,11 @@ const AdminClientDetails = () => {
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full ${client.isVerified ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400'}`}>
                       {client.isVerified ? 'Verified' : 'Unverified'}
                     </span>
+                    {client.lockUntil && new Date(client.lockUntil) > new Date() && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                        <Lock style={{ fontSize: 12 }} /> Temporarily Locked
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -191,7 +213,24 @@ const AdminClientDetails = () => {
             <div className="p-5">
               {/* Account tab */}
               {tab === 0 && (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="space-y-3">
+                  {client.lockUntil && new Date(client.lockUntil) > new Date() && (
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/10 dark:border-red-800">
+                      <div className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400">
+                        <Lock fontSize="small" />
+                        <span>Account locked until <strong>{new Date(client.lockUntil).toLocaleString()}</strong></span>
+                      </div>
+                      <button
+                        onClick={handleAdminUnlock}
+                        disabled={unlockLoading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {unlockLoading ? <CircularProgress size={12} style={{ color: 'white' }} /> : <LockOpen style={{ fontSize: 14 }} />}
+                        Unlock Now
+                      </button>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {client.isActive ? (
                     <ActionBtn icon={<Cancel fontSize="small" />} label="Deactivate" color="red" onClick={() => open_(setOpenDe)} />
                   ) : (
@@ -204,6 +243,7 @@ const AdminClientDetails = () => {
                   )}
                   <ActionBtn icon={<Edit fontSize="small" />} label="Update Info" color="gray" onClick={() => { setOpenUpdate(true); setClient(client) }} />
                   <ActionBtn icon={<DeleteSweep fontSize="small" />} label="Clear Balances" color="red" onClick={() => open_(setOpenClear)} />
+                  </div>
                 </div>
               )}
 
