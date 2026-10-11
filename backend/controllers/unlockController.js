@@ -77,9 +77,8 @@ const handleAdminUnlockAccount = async (req, res) => {
   const { userId } = req.params;
   try {
     await Client.findByIdAndUpdate(userId, {
-      lockUntil: undefined,
-      loginAttempts: 0,
-      unlockRequestStatus: 'none'
+      $unset: { lockUntil: '' },
+      $set: { loginAttempts: 0, unlockRequestStatus: 'none' }
     });
     res.json({ message: 'Account unlocked successfully' });
   } catch (error) {

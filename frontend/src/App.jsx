@@ -46,6 +46,7 @@ import Notification from './components/client/notifications/Notification';
 import AdminClients from './components/admin/adminClient/AdminClients';
 import TradeLog from './components/admin/trades/TradeLog';
 import DueTrades from './components/admin/trades/DueTrades';
+import AccountUnlock from './components/auth/AccountUnlock';
 import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
 import PrivacyPolicy from './components/home/pages/PrivacyPolicy';
@@ -96,6 +97,7 @@ function App() {
       <Route path='/register' element={<SignUp />} />
       <Route path='/forgotpassword' element={<ForgotPassword />} />
       <Route path='/reset-password' element={<ResetPassword />} />
+      <Route path='/account-unlock' element={<AccountUnlock />} />
 
       <Route element={<PersistLogin />}>
         <Route element={<RequireAuthAdmin allowedRoles={[roles.admin]} />}>

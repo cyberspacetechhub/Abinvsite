@@ -4,7 +4,9 @@ import useAuth from '../../../hooks/useAuth'
 import { useParams, useNavigate } from 'react-router-dom'
 import baseURL from '../../../shared/baseURL'
 import { CircularProgress } from '@mui/material'
-import { useQuery } from 'react-query'
+import axios from 'axios'
+import { useQuery, useQueryClient } from 'react-query'
+import { toast } from 'react-toastify'
 import AdminUpdateClient from './AdminUpdateClient'
 import AddToUserBalance from './AddToUserBalance'
 import DebitUser from './DebitUser'
@@ -70,6 +72,7 @@ const AdminClientDetails = () => {
   const [openPlanOff, setOpenPlanOff] = useState(false)
   const [openSetLimit, setOpenSetLimit] = useState(false)
   const [unlockLoading, setUnlockLoading] = useState(false)
+  const queryClient = useQueryClient()
 
   const handleClientDetails = async () => {
     const result = await fetch(`${baseURL}client/${id}`, auth.accessToken)
@@ -88,14 +91,13 @@ const AdminClientDetails = () => {
   const handleAdminUnlock = async () => {
     setUnlockLoading(true)
     try {
-      await import('axios').then(({ default: axios }) =>
-        axios.put(`${baseURL}unlock/admin-unlock/${client._id}`, {}, {
-          headers: { Authorization: `Bearer ${auth.accessToken}` }
-        })
-      )
-      await handleClientDetails()
+      await axios.put(`${baseURL}unlock/admin-unlock/${client._id}`, {}, {
+        headers: { Authorization: `Bearer ${auth.accessToken}` }
+      })
+      toast.success('Account unlocked successfully')
+      await queryClient.invalidateQueries(['client'])
     } catch (e) {
-      // silent — refetch will show current state
+      toast.error(e.response?.data?.message || 'Failed to unlock account')
     } finally {
       setUnlockLoading(false)
     }

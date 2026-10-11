@@ -1,173 +1,205 @@
 import React, { useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import { Link, useNavigate } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
-import { CloudUpload, Security } from '@mui/icons-material';
-import baseURL from '../../shared/baseURL';
+import { LockOpen, CloudUpload, MarkEmailRead } from '@mui/icons-material';
 import axios from 'axios';
+import baseURL from '../../shared/baseURL';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 
-const AccountUnlock = ({ userEmail, onSuccess, onBack }) => {
-  const [step, setStep] = useState('upload'); // 'upload' or 'temp-login'
-  const [loading, setLoading] = useState(false);
-  const [unlockImage, setUnlockImage] = useState(null);
+const AccountUnlock = () => {
+  const navigate = useNavigate();
+  const [step, setStep] = useState('form'); // 'form' | 'submitted' | 'code'
+  const [email, setEmail] = useState('');
+  const [image, setImage] = useState(null);
   const [tempCode, setTempCode] = useState('');
-  const [email, setEmail] = useState(userEmail || '');
+  const [loading, setLoading] = useState(false);
 
-  const handleImageUpload = (e) => {
-    setUnlockImage(e.target.files[0]);
-  };
-
-  const submitUnlockRequest = async () => {
-    if (!email || !unlockImage) {
-      toast.error('Please provide email and verification image');
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be less than 10MB');
       return;
     }
+    setImage(file);
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email || !image) {
+      toast.error('Please provide your email and a verification photo');
+      return;
+    }
     setLoading(true);
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('verificationImage', unlockImage);
-
     try {
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('verificationImage', image);
       await axios.post(`${baseURL}unlock/forgot-password`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
-      toast.success('Unlock request submitted. Please wait for admin approval.');
-      setStep('temp-login');
+      setStep('submitted');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Error submitting unlock request');
+      toast.error(error.response?.data?.message || 'Failed to submit request. Try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTempLogin = async () => {
-    if (!tempCode.trim()) {
-      toast.error('Please enter the temporary code');
-      return;
-    }
-
+  const handleTempLogin = async (e) => {
+    e.preventDefault();
+    if (!tempCode.trim()) return;
     setLoading(true);
     try {
-      const response = await axios.post(`${baseURL}unlock/temp-login`, {
-        email,
-        tempCode
-      });
-      
-      toast.success('Account unlocked successfully!');
-      onSuccess(response.data.user);
+      await axios.post(`${baseURL}unlock/temp-login`, { email, tempCode });
+      toast.success('Account unlocked! Redirecting...');
+      setTimeout(() => navigate('/auth/user/login'), 1500);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Invalid temporary code');
+      toast.error(error.response?.data?.message || 'Invalid or expired code');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800">
-      <div className="flex items-center gap-3 mb-6">
-        <Security className="w-6 h-6 text-red-600 dark:text-red-400" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Account Locked
-        </h3>
+    <div className="min-h-screen flex flex-col bg-neutral-50 dark:bg-darkBg">
+      <ToastContainer />
+
+      <header className="w-full border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-6 md:px-12 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Link to="/"><img src="/semlogo.png" alt="Logo" className="h-10 w-auto" /></Link>
+          <LanguageSwitcher />
+        </div>
+      </header>
+
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-strong border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+            <div className="p-8 space-y-6">
+
+              <div className="text-center">
+                {step === 'submitted' ? (
+                  <MarkEmailRead className="mx-auto mb-3 text-primary-600" style={{ fontSize: 48 }} />
+                ) : (
+                  <LockOpen className="mx-auto mb-3 text-primary-600" style={{ fontSize: 48 }} />
+                )}
+                <h1 className="font-display text-2xl font-bold text-neutral-900 dark:text-white mb-1">
+                  {step === 'code' ? 'Enter Your Code' : 'Unlock Account'}
+                </h1>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  {step === 'form' && 'Upload a verification photo and we\'ll submit your unlock request to our team.'}
+                  {step === 'submitted' && 'Your request has been submitted. Once approved, you\'ll receive a temporary login code by email.'}
+                  {step === 'code' && `Enter the temporary code sent to ${email}`}
+                </p>
+              </div>
+
+              {step === 'form' && (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block mb-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your account email"
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-neutral-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Verification Photo
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        required
+                        className="w-full px-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                      />
+                      <CloudUpload className="absolute right-3 top-3.5 text-neutral-400" fontSize="small" />
+                    </div>
+                    <p className="mt-1 text-xs text-neutral-400">
+                      Photo of you holding a signed paper with your name and today's date
+                    </p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-colors"
+                  >
+                    {loading ? <CircularProgress size={18} style={{ color: 'white' }} /> : 'Submit Unlock Request'}
+                  </button>
+                </form>
+              )}
+
+              {step === 'submitted' && (
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setStep('code')}
+                    className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-colors"
+                  >
+                    I already have a code
+                  </button>
+                  <button
+                    onClick={() => setStep('form')}
+                    className="w-full bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-300 font-semibold py-3 rounded-lg transition-colors"
+                  >
+                    Submit another request
+                  </button>
+                </div>
+              )}
+
+              {step === 'code' && (
+                <form onSubmit={handleTempLogin} className="space-y-4">
+                  <div>
+                    <label className="block mb-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Temporary Code
+                    </label>
+                    <input
+                      type="text"
+                      value={tempCode}
+                      onChange={(e) => setTempCode(e.target.value)}
+                      placeholder="Enter 6-digit code"
+                      maxLength={6}
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700 text-neutral-900 dark:text-white text-center text-lg font-mono placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-colors"
+                  >
+                    {loading ? <CircularProgress size={18} style={{ color: 'white' }} /> : 'Login with Code'}
+                  </button>
+                  <button type="button" onClick={() => setStep('submitted')} className="w-full text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
+                    ← Back
+                  </button>
+                </form>
+              )}
+
+              <div className="pt-2 text-center space-y-2">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Forgot your password instead?{' '}
+                  <Link to="/forgotpassword" className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
+                    Reset password
+                  </Link>
+                </p>
+                <Link to="/auth/user/login" className="block text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
+                  ← Back to Login
+                </Link>
+              </div>
+
+            </div>
+          </div>
+        </div>
       </div>
-
-      {step === 'upload' ? (
-        <div>
-          <p className="mb-4 text-gray-600 dark:text-gray-400">
-            Your account has been locked due to multiple failed login attempts. 
-            To unlock your account, please upload a photo of yourself holding a signed paper with your name and today's date.
-          </p>
-          
-          {!userEmail && (
-            <div className="mb-4">
-              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-          )}
-          
-          <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Upload Verification Photo
-            </label>
-            <div className="relative">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              />
-              <CloudUpload className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={submitUnlockRequest}
-              disabled={loading}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
-            >
-              {loading ? <CircularProgress size={16} /> : 'Submit Unlock Request'}
-            </button>
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="px-4 py-3 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300"
-              >
-                Back
-              </button>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div>
-          <p className="mb-4 text-gray-600 dark:text-gray-400">
-            Your unlock request has been submitted. Once approved by an admin, 
-            you will receive a temporary login code via email.
-          </p>
-          
-          <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Enter Temporary Code
-            </label>
-            <input
-              type="text"
-              value={tempCode}
-              onChange={(e) => setTempCode(e.target.value)}
-              placeholder="Enter 6-digit code from email"
-              maxLength={6}
-              className="w-full px-3 py-2 text-center text-lg font-mono border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={handleTempLogin}
-              disabled={loading}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
-            >
-              {loading ? <CircularProgress size={16} /> : 'Login with Temp Code'}
-            </button>
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="px-4 py-3 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300"
-              >
-                Back
-              </button>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
